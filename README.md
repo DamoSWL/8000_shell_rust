@@ -3,7 +3,7 @@
 
 Write a Shell in Rust.
 
-##Objective:
+## Objective:
 
 It’s easy to view yourself as “not a real programmer.” There
 are programs out there that everyone uses, and it’s easy to
@@ -41,8 +41,10 @@ Rust
 Weili, Shi  
 Sixiang, Zhang
 
-##Releases:
+## Releases:
 0.1: initialization, pwd, exit.
+0.2: ls,cd
+cd
 
 ## How to run
 To find the executable file

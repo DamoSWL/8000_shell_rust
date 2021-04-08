@@ -3,6 +3,7 @@ use std::io::{stdin, stdout, Write};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
 use std::fs;
+use std::env::{current_dir, set_current_dir};
 
 fn main(){
 
@@ -16,7 +17,7 @@ fn main(){
         if let Err(e) = env::set_current_dir(&root) {
             eprintln!("{}", e);
         }
-
+    print!("user@localhost:/csci-shell/home$ ");
     loop {
 
         /* let key = "PATH";
@@ -27,7 +28,6 @@ fn main(){
              Err(e) => println!("couldn't interpret {}: {}", key, e),
          } */
 
-        print!("user@localhost:/csci-shell/home$ ");
         stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -43,9 +43,18 @@ fn main(){
             let mut parts = command.trim().split_whitespace();
             let command = parts.next().unwrap();
             let args = parts;
-
+//add exit and cd command
             match command {
                 "exit" => return,
+                "cd"   => {
+                    let dir = args.peekable().peek().map_or("/",|x|*x);
+                    let root = Path::new(&(dir));
+
+                    if !root.is_dir() {
+                        println!("{}: No such directory", dir);
+                    }
+                    print!("user@localhost:/csci-shell/home/{}$ ",dir);
+                }
                 command => {
                     let stdin = previous_command
                         .map_or(Stdio::inherit(),
@@ -70,8 +79,13 @@ fn main(){
                         .stdout(stdout)
                         .spawn();
 
+
+
+
+
                     match output {
-                        Ok(output) => { previous_command = Some(output); },
+                        Ok(output) => { previous_command = Some(output);
+                            },
                         Err(e) => {
                             previous_command = None;
                             eprintln!("{}", e);
@@ -85,6 +99,16 @@ fn main(){
  
             final_command.wait().unwrap();
         }
+
+
+
+         // match std::env::current_dir() {
+         //     Err(why) => println!("/csci-shell/home {:?}", why.kind()),//recive the error
+         //     Ok(_) => { print!("user@localhost:/csci-shell/home$")},
+         // }
+
+
+
 
     }
 }
