@@ -1,49 +1,64 @@
 use std::env;
 use std::io::{stdin, stdout, Write};
 use std::path::Path;
-use std::process::{Child, Command, Stdio};
+use std::process::Command;
 use std::fs;
-use std::env::{current_dir, set_current_dir};
+
 
 fn main(){
 
 
     match fs::create_dir("/csci-shell/home") {
-        Err(why) => println!("/csci-shell/home {:?}", why.kind()),//recive the error
-        Ok(_) => {},
+        Err(_) => (),
+        Ok(_) => (),
     }
 
     let root = Path::new("/csci-shell/home");
-        if let Err(e) = env::set_current_dir(&root) {
-            eprintln!("{}", e);
-        }
-    print!("user@localhost:/csci-shell/home$ ");
+    if let Err(e) = env::set_current_dir(&root) {
+        println!("{}", e);
+    }
+
+    let mut prefix = String::new();
+     match env::var("USER") {
+         Ok(val) => { prefix = val.clone()},
+         Err(_) => (),
+     } 
+
+     prefix.push_str("@localhost:");
+     
+
     loop {
 
-        /* let key = "PATH";
-         match env::var(key) {
-             Ok(val) => {
-             //   println!("val =>{}",val);
-             },
-             Err(e) => println!("couldn't interpret {}: {}", key, e),
-         } */
+        let mut final_prefix = prefix.clone();
+
+        match env::current_dir(){
+            Ok(path) => {
+                final_prefix.push_str(path.to_str().unwrap());
+            },
+            Err(_) => (),
+        }
+        
+        final_prefix.push_str("$ ");
+        print!("{}",final_prefix);
 
         stdout().flush().unwrap();
 
         let mut input = String::new();
         stdin().read_line(&mut input).unwrap();
 
-//trim returns the trimmed string as a slice,without modifying the original
+        if input.trim().len() == 0{
+            continue;
+        }
+        
+        //trim returns the trimmed string as a slice,without modifying the original
         let mut commands = input.trim().split(" | ").peekable();
-        let mut previous_command = None;
-
+             
         while let Some(command) = commands.next()  {
 
-            
             let mut parts = command.trim().split_whitespace();
             let command = parts.next().unwrap();
             let args = parts;
-//add exit and cd command
+
             match command {
                 "exit" => return,
                 "cd"   => {
@@ -53,61 +68,25 @@ fn main(){
                     if !root.is_dir() {
                         println!("{}: No such directory", dir);
                     }
-                    print!("user@localhost:/csci-shell/home/{}$ ",dir);
-                }
-                command => {
-                    let stdin = previous_command
-                        .map_or(Stdio::inherit(),
-                                |output: Child| Stdio::from(output.stdout.unwrap()));
-
-                    let stdout = if commands.peek().is_some() {
-     
-                        Stdio::piped()
-                    } else {
-                   
-                        Stdio::inherit()
-                    };
-                    /* use std::process::Command;
-                        Command::new("ls")
-                                 .arg("-l")
-                                 .arg("-a")
-                                 .spawn()
-                                 .expect("ls command failed to start")*/
-                    let output = Command::new(command)
-                        .args(args)
-                        .stdin(stdin)
-                        .stdout(stdout)
-                        .spawn();
-
-
-
-
-
-                    match output {
-                        Ok(output) => { previous_command = Some(output);
-                            },
-                        Err(e) => {
-                            previous_command = None;
+                    else{
+                        if let Err(e) = env::set_current_dir(&root) {
                             eprintln!("{}", e);
-                        },
-                    };
-                }
+                        }
+                    }
+                   
+                },
+
+                command => { let mut child = Command::new(command)
+                        .args(args)
+                        .spawn()
+                        .unwrap();
+
+                        child.wait().expect("process failed");
+                },
+                
             }
         }
-
-        if let Some(mut final_command) = previous_command {
- 
-            final_command.wait().unwrap();
-        }
-
-
-
-         // match std::env::current_dir() {
-         //     Err(why) => println!("/csci-shell/home {:?}", why.kind()),//recive the error
-         //     Ok(_) => { print!("user@localhost:/csci-shell/home$")},
-         // }
-
-
+        
 
 
     }
