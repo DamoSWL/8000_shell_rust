@@ -81,10 +81,55 @@ fn main(){
                     println!("{}",dir.to_str().unwrap());
 
                 },
+
+                "ls" => { let mut tmp_args = args.clone();
+                         if tmp_args.next() == None{
+                         let dirs =  fs::read_dir(".").unwrap();
+                         for dir in dirs{
+                            if let Ok(dir) = dir{
+                                let filename = dir.file_name().into_string().unwrap();
+                                println!("{}",filename);
+                            }
+
+                        }
+                    }
+                    else{
+                       let mut child = Command::new(command)
+                            .args(args)
+                            .spawn()
+                            .unwrap();
+    
+                            child.wait().expect("process failed");
+
+                    }
+
+
+                },
+
+
                 "find" =>{
-                   args.next();
-                   args.next();
+                    let mut tmp_args = args.clone();
+                   if tmp_args.next() == None{
+                       println!("invalid command format");
+                       continue;
+                   }
+                   else{
+                       args.next();
+                   }
+                   if tmp_args.next() == None{
+                        println!("invalid command format");
+                        continue;
+                   }
+                   else{
+                       args.next();
+                   }
+
+                   if tmp_args.next() == None{
+                        println!("invalid command format");
+                        continue;
+                    }
                    let pattern = args.next().unwrap();
+                   
                    let mut filestrs = Vec::new();
 
                    let path = env::current_dir().unwrap();
