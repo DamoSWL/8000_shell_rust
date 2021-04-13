@@ -3,6 +3,7 @@ use std::io::{stdin, stdout, Write};
 use std::path::Path;
 use std::process::Command;
 use std::fs;
+use std::vec::Vec;
 
 
 fn main(){
@@ -57,8 +58,9 @@ fn main(){
 
             let mut parts = command.trim().split_whitespace();
             let command = parts.next().unwrap();
-            let args = parts;
+            let mut args = parts;
 
+          
             match command {
                 "exit" => return,
                 "cd"   => {
@@ -75,6 +77,50 @@ fn main(){
                     }
                    
                 },
+                "pwd" => { let dir = env::current_dir().unwrap();
+                    println!("{}",dir.to_str().unwrap());
+
+                },
+                "find" =>{
+                   args.next();
+                   args.next();
+                   let pattern = args.next().unwrap();
+                   let mut filestrs = Vec::new();
+
+                   let path = env::current_dir().unwrap();
+                   let path = path.to_str().unwrap();
+
+                   let dirs =  fs::read_dir(path).unwrap();
+                   for dir in dirs{
+                       if let Ok(dir) = dir{
+                           let filename = dir.file_name().into_string().unwrap();
+
+                            if pattern.contains("*."){
+                                let len = pattern.len();
+                                let new_pattern = &pattern[2 .. len];
+
+                                if filename.contains(new_pattern){
+                                    filestrs.push(filename);
+                                }
+
+                            }else{
+                                if filename == pattern{
+                                    filestrs.push(filename);
+                                }
+
+                            } 
+                       }
+                   }
+
+                   for file_name in filestrs{
+                       let mut full_path = String::from(path);
+                       full_path.push_str("/");
+                       full_path.push_str(&file_name);
+                       println!("{}",full_path);
+
+                   }
+
+                },
 
                 command => { let mut child = Command::new(command)
                         .args(args)
@@ -86,8 +132,6 @@ fn main(){
                 
             }
         }
-        
-
-
     }
 }
+
