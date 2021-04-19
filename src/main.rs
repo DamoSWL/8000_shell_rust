@@ -1,13 +1,17 @@
 use std::env;
 use std::io::{stdin, stdout, Write};
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use std::fs;
 use std::vec::Vec;
 
+struct HistoryEntry{
+    args : Vec<String>,
+    background : bool
+}
 
 fn main(){
-
+    let mut history : Vec<HistoryEntry> = Vec::new();
 
     match fs::create_dir("/csci-shell/home") {
         Err(_) => (),
@@ -53,7 +57,7 @@ fn main(){
         
         //trim returns the trimmed string as a slice,without modifying the original
         let mut commands = input.trim().split(" | ").peekable();
-             
+
         while let Some(command) = commands.next()  {
 
             let mut parts = command.trim().split_whitespace();
@@ -166,17 +170,35 @@ fn main(){
                    }
 
                 },
+                "history"=> {
+                    if history.is_empty() {
+                        println!("Nothing entered yet");
+                    } else {
+                        //need elaborate
 
+                        }
+                },
+
+//create a new commmand
+//use stdio::piped() to connect
                 command => { let mut child = Command::new(command)
-                        .args(args)
-                        .spawn()
-                        .unwrap();
+                    .stdin(Stdio::piped())
+                    .spawn()
+                    .unwrap();
 
-                        child.wait().expect("process failed");
+
+                        //child.wait().expect("process failed");
+                    let output = child.wait_with_output().unwrap();
+
+                    println!("{}", String::from_utf8_lossy(&output.stdout));
                 },
                 
             }
         }
+        // if let Some(mut final_command) = child {
+        //     // block until the final command has finished
+        //     final_command.wait().unwrap();
+        // }
     }
 }
 

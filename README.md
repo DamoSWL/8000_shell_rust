@@ -42,9 +42,11 @@ Weili, Shi
 Sixiang, Zhang
 
 ## Releases:
-0.1: initialization, pwd, exit.
+0.1: initialization, pwd, exit
+
 0.2: ls,cd
-cd
+
+0.3: pipe (|), service (&), history
 
 ## How to run
 To find the executable file
