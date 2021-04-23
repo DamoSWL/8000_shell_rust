@@ -4,14 +4,15 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 use std::fs;
 use std::vec::Vec;
+use std::string::String;
 
-struct HistoryEntry{
-    args : Vec<String>,
-    background : bool
-}
+// struct HistoryEntry{
+//     args : Vec<String>,
+//     background : bool
+// }
 
 fn main(){
-    let mut history : Vec<HistoryEntry> = Vec::new();
+    let mut history  = Vec::new();
 
     match fs::create_dir("/csci-shell/home") {
         Err(_) => (),
@@ -55,6 +56,8 @@ fn main(){
             continue;
         }
         
+        let history_cmd = String::from(&input);
+        history.push(history_cmd);
         //trim returns the trimmed string as a slice,without modifying the original
         let mut commands = input.trim().split(" | ").peekable();
 
@@ -66,8 +69,13 @@ fn main(){
 
           
             match command {
-                "exit" => return,
+                "exit" => {
+                    
+                    return;
+                },
                 "cd"   => {
+
+                    
                     let dir = args.peekable().peek().map_or("/",|x|*x);
                     let root = Path::new(&(dir));
 
@@ -81,7 +89,9 @@ fn main(){
                     }
                    
                 },
-                "pwd" => { let dir = env::current_dir().unwrap();
+                "pwd" => { 
+                    
+                    let dir = env::current_dir().unwrap();
                     println!("{}",dir.to_str().unwrap());
 
                 },
@@ -171,17 +181,14 @@ fn main(){
 
                 },
                 "history"=> {
-                    if history.is_empty() {
-                        println!("Nothing entered yet");
-                    } else {
-                        //need elaborate
-
-                        }
+                    for cmd in &history{
+                        print!("{}",cmd);
+                    }
                 },
 
 //create a new commmand
 //use stdio::piped() to connect
-                command => { let mut child = Command::new(command)
+                command => { let child = Command::new(command)
                     .stdin(Stdio::piped())
                     .spawn()
                     .unwrap();
