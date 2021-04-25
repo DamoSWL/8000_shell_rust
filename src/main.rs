@@ -8,10 +8,6 @@ use std::string::String;
 use std::str::SplitWhitespace;
 
 
-// struct HistoryEntry{
-//     args : Vec<String>,
-//     background : bool
-// }
 
 
 fn chdir(args : SplitWhitespace){
@@ -122,7 +118,56 @@ fn history(his_cmds: &Vec<String>){
     }
 }
 
+fn redirection(args : SplitWhitespace, command: &str){
+    let mut _redirection_type : i8 = 0;
+    let mut tmp_args = args.clone();
+    let mut new_args = String::new();
+    loop{
 
+       let element = tmp_args.next().unwrap();
+       if element == ">"{
+           _redirection_type = 1;
+           break;
+       }
+       else if element == ">>"{
+           _redirection_type = 2;
+           break;
+       }
+       else{
+        new_args.push_str(element);
+        new_args.push_str(" ");
+       }
+    }
+
+    let file_name = tmp_args.next().unwrap();
+
+    
+
+    if _redirection_type == 1{
+        let file = fs::File::create(file_name).unwrap();
+
+        let child = Command::new(command)
+        .args(new_args.split_whitespace())
+        .stdout(Stdio::from(file))
+        .spawn()
+        .unwrap();
+        
+        child.wait_with_output().unwrap();
+    }
+    else if _redirection_type == 2{
+        let file = fs::OpenOptions::new().create(true).append(true).open(file_name).unwrap();
+
+        let child = Command::new(command)
+        .args(new_args.split_whitespace())
+        .stdout(Stdio::from(file))
+        .spawn()
+        .unwrap();
+        
+         child.wait_with_output().unwrap();
+    }
+    else{}      
+
+}
 
 
 fn main(){
@@ -175,6 +220,8 @@ fn main(){
 
         let mut _service : bool = false;
         let mut _pipeline : bool = false;
+        let mut _redirection_1 : bool = false;
+        let mut _redirection_2 : bool = false;
        
         if input.contains("&"){
             _service = true;
@@ -186,6 +233,14 @@ fn main(){
             _pipeline = true;
            
         }
+
+        if input.contains(">"){
+            _redirection_1 = true;
+        }
+
+        if input.contains(">>"){
+            _redirection_2 = true;
+        }
  
         if !_pipeline{
             //trim returns the trimmed string as a slice,without modifying the original
@@ -196,41 +251,49 @@ fn main(){
                 let mut parts = command.trim().split_whitespace();
                 let command = parts.next().unwrap();
                 let args = parts;
-        
-        
-                match command {
-                    "exit" => {                   
-                        return;
-                    },
-                    "cd"   => {
-                        chdir(args);                   
-                    },
-                    "pwd" => { 
-                        print_dir();
-                    },
 
-                    "ls" => {           
-                        list(args,command);                 
-                    },
-
-
-                    "find" =>{
-                        find(args);
-                
-                    },
-                    "history"=> {
-                        history(&his_commands);
-                    },
-
-                    command => {
-                        let child = Command::new(command)
-                        .spawn()
-                        .unwrap();
-
-                        child.wait_with_output().unwrap();
-    
-                    },
+                if _redirection_1 || _redirection_2{
+                    redirection(args,command);
                 }
+                else{
+                    match command {
+                        "exit" => {                   
+                            return;
+                        },
+                        "cd"   => {
+                            chdir(args);                   
+                        },
+                        "pwd" => { 
+                            print_dir();
+                        },
+    
+                        "ls" => {           
+                            list(args,command);                 
+                        },
+    
+    
+                        "find" =>{
+                            find(args);
+                    
+                        },
+                        "history"=> {
+                            history(&his_commands);
+                        },
+    
+                        command => {
+                            let child = Command::new(command)
+                            .spawn()
+                            .unwrap();
+    
+                            child.wait_with_output().unwrap();
+        
+                        },
+                    }
+
+                }
+        
+        
+                
             }
                     
                 
