@@ -9,7 +9,17 @@ use std::str::SplitWhitespace;
 
 
 
+// *************************************************************************************************************************************
+// Author: Shi, Weili, Sixiang Zhang                                                                                                             *
+// Project: Designing a Shell with Rust                                                                                             *
+// Code Description: This section of code will accept commands(such as ls, pwd and so on)from the command line.* *
+// *************************************************************************************************************************************
 
+
+/***********************************************************
+ * Function: Implement the function of changing directory(CD) command
+ * Description: execute cd[directory]
+ * ***********************************************************/
 fn chdir(args : SplitWhitespace){
     let dir = args.peekable().peek().map_or("/",|x|*x);
     let root = Path::new(&(dir));
@@ -23,12 +33,18 @@ fn chdir(args : SplitWhitespace){
         }
     }
 }
-
+/***********************************************************
+ * Function: Implement pwd command
+ * Description: To print work directory, we use the current_dir to print the directory.
+ * ***********************************************************/
 fn print_dir(){
     let dir = env::current_dir().unwrap();
     println!("{}",dir.to_str().unwrap());
 }
-
+/***********************************************************
+ * Function: ls
+ * Description: execute ls [option]
+ * ***********************************************************/
 fn list(args : SplitWhitespace, command: &str){
     let mut tmp_args = args.clone();
     if tmp_args.next() == None{
@@ -51,7 +67,10 @@ fn list(args : SplitWhitespace, command: &str){
 
     }
 }
-
+/***********************************************************
+ * Function: find
+ * Description: To Search in the current directory and its descendents.
+ * ***********************************************************/
 fn find(args : SplitWhitespace){
     let mut tmp_args = args.clone();
     let mut real_args = args.clone();
@@ -111,13 +130,19 @@ fn find(args : SplitWhitespace){
 
     }
 }
-
+/***********************************************************
+ * Function: history
+ * Description: To show the valid list of commands that have been executed (current session).
+ * ***********************************************************/
 fn history(his_cmds: &Vec<String>){
     for cmd in his_cmds{
         print!("{}",cmd);
     }
 }
-
+/***********************************************************
+ * Function: file redirection (<, >, >>)
+ * Description: redirect the stdout to the designated file
+ * ***********************************************************/
 fn redirection(args : SplitWhitespace, command: &str){
     let mut _redirection_type : i8 = 0;
     let mut tmp_args = args.clone();
@@ -170,9 +195,13 @@ fn redirection(args : SplitWhitespace, command: &str){
 }
 
 
+
 fn main(){
     let mut his_commands  = Vec::new();
-
+    /********************************************************************
+     * Description: First,initialize the working directory of the shell, and make
+     * the ~/csci-shell/home as the current working directory of the shell
+     *************************************************************************/
     match fs::create_dir("/csci-shell/home") {
         Err(_) => (),
         Ok(_) => (),
