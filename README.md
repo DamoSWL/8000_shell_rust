@@ -48,6 +48,8 @@ Sixiang, Zhang
 
 0.3: pipe (|), service (&), history
 
+1.0: file redirection (<, >, >>)
+
 ## How to run
 To find the executable file
 ```bash
